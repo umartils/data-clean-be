@@ -37,7 +37,8 @@ def read_uploaded_file(
         return pd.read_csv(file, delimiter=csv_delimiter, header=csv_header_row)
     if lower.endswith((".xls", ".xlsx")):
         engine = "openpyxl" if lower.endswith(".xlsx") else "xlrd"
-        return pd.read_excel(file, sheet_name=sheet_name, engine=engine, engine_kwargs={"ignore_workbook_corruption": True})
+        engine_kwargs = {"ignore_workbook_corruption": True} if engine == "xlrd" else {}
+        return pd.read_excel(file, sheet_name=sheet_name, engine=engine, engine_kwargs=engine_kwargs)
     raise ValueError(f"Format file tidak didukung: {filename}. Gunakan .csv, .xls, atau .xlsx")
 
 
