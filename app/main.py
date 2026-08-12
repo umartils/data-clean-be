@@ -8,7 +8,10 @@ app = FastAPI(title="Lembaga CSV Tools API")
 # Sesuaikan allow_origins ke domain frontend Next.js kamu waktu deploy
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://mn-tools.vercel.app"
+        ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
