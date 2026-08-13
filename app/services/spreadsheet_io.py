@@ -51,12 +51,13 @@ def read_uploaded_file(
     lower = filename.lower()
     columns = _peek_columns(file, filename, csv_delimiter, csv_header_row)
     dtype_map = {c: str for c in columns if _is_id_like_column(c)}
-
+    
     if lower.endswith(".csv"):
         return pd.read_csv(file, delimiter=csv_delimiter, header=csv_header_row, dtype=dtype_map or None)
     if lower.endswith((".xls", ".xlsx")):
         engine = "openpyxl" if lower.endswith(".xlsx") else "xlrd"
-        return pd.read_excel(file, sheet_name=sheet_name, engine=engine, dtype=dtype_map or None)
+        engine_kwargs = {"ignore_workbook_corruption": True} if engine == "xlrd" else {}
+        return pd.read_excel(file, sheet_name=sheet_name, engine=engine, engine_kwargs=engine_kwargs, dtype=dtype_map or None)
     raise ValueError(f"Format file tidak didukung: {filename}. Gunakan .csv, .xls, atau .xlsx")
 
 
