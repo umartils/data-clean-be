@@ -1,9 +1,3 @@
-"""
-Baca file upload (csv/xls/xlsx) jadi DataFrame, dan tulis DataFrame
-hasil klasifikasi jadi satu file .xlsx dengan sheet terpisah per kategori
-+ sheet gabungan "Hasil Klasifikasi" — mengikuti pola notebook asli.
-"""
-
 from __future__ import annotations
 
 import io
@@ -17,6 +11,29 @@ from openpyxl.styles import Font, PatternFill
 HEADER_FONT = Font(name="Arial", bold=True, color="FFFFFF")
 HEADER_FILL = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
 
+ID_LIKE_COLUMN_HINTS = ["id", "kode", "no.", "nomor", "npwp", "nik"]
+
+
+def _is_id_like_column(col_name: str) -> bool:
+    name_lower = str(col_name).strip().lower()
+    return any(
+        re.search(rf"(^|[^a-z0-9]){re.escape(hint)}([^a-z0-9]|$)", name_lower)
+        for hint in ID_LIKE_COLUMN_HINTS
+    )
+
+
+def _peek_columns(file: BinaryIO, filename: str, csv_delimiter: str, csv_header_row: int) -> list[str]:
+    """Baca header saja (0 baris data) untuk tahu nama kolom sebelum baca penuh."""
+    lower = filename.lower()
+    file.seek(0)
+    if lower.endswith(".csv"):
+        cols = pd.read_csv(file, delimiter=csv_delimiter, header=csv_header_row, nrows=0).columns
+    else:
+        engine = "openpyxl" if lower.endswith(".xlsx") else "xlrd"
+        engine_kwargs = {"ignore_workbook_corruption": True} if engine == "xlrd" else {}
+        cols = pd.read_excel(file, sheet_name=0, engine=engine, engine_kwargs=engine_kwargs, nrows=0).columns
+    file.seek(0)
+    return list(cols)
 
 def read_uploaded_file(
     file: BinaryIO,
@@ -25,20 +42,17 @@ def read_uploaded_file(
     csv_delimiter: str = ";",
     csv_header_row: int = 0,
 ) -> pd.DataFrame:
-    """
-    Baca .csv/.xls/.xlsx jadi DataFrame.
-
-    csv_header_row default 0 (baris pertama = header) — di notebook asli
-    pakai header=1 karena file sumbernya punya 1 baris judul/laporan di
-    atas header asli. Sesuaikan lewat parameter kalau format sumbernya beda.
-    """
+    
     lower = filename.lower()
+    columns = _peek_columns(file, filename, csv_delimiter, csv_header_row)
+    dtype_map = {c: str for c in columns if _is_id_like_column(c)}
+    
     if lower.endswith(".csv"):
-        return pd.read_csv(file, delimiter=csv_delimiter, header=csv_header_row)
+        return pd.read_csv(file, delimiter=csv_delimiter, header=csv_header_row, dtype=dtype_map or None)
     if lower.endswith((".xls", ".xlsx")):
         engine = "openpyxl" if lower.endswith(".xlsx") else "xlrd"
         engine_kwargs = {"ignore_workbook_corruption": True} if engine == "xlrd" else {}
-        return pd.read_excel(file, sheet_name=sheet_name, engine=engine, engine_kwargs=engine_kwargs)
+        return pd.read_excel(file, sheet_name=sheet_name, engine=engine, engine_kwargs=engine_kwargs, dtype=dtype_map or None)
     raise ValueError(f"Format file tidak didukung: {filename}. Gunakan .csv, .xls, atau .xlsx")
 
 
