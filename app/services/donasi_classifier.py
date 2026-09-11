@@ -43,6 +43,8 @@ def classify_by_program(program: str | None) -> str | None:
         return None
     if program.strip() == "Pembangunan Masjid":
         return "Masjid"
+    if program.strip() == "Masjid Bencana":
+            return "Masjid Gempa NTT"
     return None
 
 
@@ -62,7 +64,7 @@ def classify_by_nominal(nominal) -> str:
     """Label kategori fallback kalau tidak ada keyword/program yang cocok."""
     return _nominal_group_label(
         nominal,
-        kecil_label="Infaq Umum (<100rb)",
+        kecil_label="Pembangunan Masjid Bersama Greget, Wujudkan Masjid di NTT",
         sedang_label="Infaq Umum (100rb-10jt)",
         besar_label="Big Deal (>10jt)",
         invalid_label="Nominal Tidak Valid",
@@ -73,7 +75,7 @@ def classify_nominal_group(nominal) -> str:
     """Label kelompok nominal saja (dipakai sebagai kolom terpisah)."""
     return _nominal_group_label(
         nominal,
-        kecil_label="Pembangunan Masjid Bersama Greget, Wujudkan Masjid di NTT",
+        kecil_label="(<100rb)",
         sedang_label="(100rb-10jt)",
         besar_label="(>10jt)",
         invalid_label="Nominal Tidak Valid",
