@@ -73,7 +73,7 @@ def classify_nominal_group(nominal) -> str:
     """Label kelompok nominal saja (dipakai sebagai kolom terpisah)."""
     return _nominal_group_label(
         nominal,
-        kecil_label="(<100rb)",
+        kecil_label="Pembangunan Masjid Bersama Greget, Wujudkan Masjid di NTT",
         sedang_label="(100rb-10jt)",
         besar_label="(>10jt)",
         invalid_label="Nominal Tidak Valid",
