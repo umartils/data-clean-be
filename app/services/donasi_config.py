@@ -8,6 +8,7 @@ kalau mau diedit lewat UI admin.
 
 KEYWORD_CATEGORIES: dict[str, list[str]] = {
     "BYOND": ["bangun masjid pelosok negeri"],
+    "BMIDIN": ['bmidin'],
     "Palestina": ["palestina", "palestine", "palestin", "gaza", "pal estina", "pales"],
     "Zakat Maal": ["zakat", "zakat fitrah", "zakat mal", "zakat maal"],
     "JMN": ["jelajah masjid nusantara", "jelajah masjid", "jmn"],
