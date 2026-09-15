@@ -17,8 +17,8 @@ KEYWORD_CATEGORIES: dict[str, list[str]] = {
         "air bersih", "sumber air", "bantuan air",
         "alirkan air", "kekeringan", "sumur masjid", "sumur",
     ],
-    "Gempa NTT" : ['ntt', 'gempa', 'gempa ntt', 'gem pa'],
     "Masjid Gempa NTT": ['masjid ntt', 'masjid di ntt', 'masjid akib at gempa', 'ntt pembanguna'],
+    "Gempa NTT" : ['ntt', 'gempa', 'gempa ntt', 'gem pa'],
     "Masjid": [
         "masjid", "mesjid", "bangun", "mas jid", "wakaf", "waqaf", "donasi masjid",
         "pembangunan masjid", "pembangunan mesjid", "infaq masjid", "shodaqoh masjid",
