@@ -44,11 +44,17 @@ async def clean_file(
     dedup_time_column: Optional[str] = Form(None),
     dedup_subset: Optional[str] = Form(None),
     remove_nulls: bool = Form(False),
-    filter_column: Optional[str] = Form(None),
-    filter_values: Optional[str] = Form(None),
+    filters: Optional[str] = Form(None),
     output_format: str = Form("csv"),
 ):
-    """Bersihkan file dan kembalikan hasilnya sebagai file download."""
+    """
+    Bersihkan file dan kembalikan hasilnya sebagai file download.
+
+    `filters`: JSON string list filter dinamis, mis.
+        '[{"column": "State", "values": ["Checkout", "Expired"]}]'
+    Boleh kosong/None, 1, atau banyak filter sekaligus — sepenuhnya dari
+    request, tidak ada yang di-hardcode di backend.
+    """
     try:
         raw = await file.read()
         df = read_uploaded_file(
@@ -66,8 +72,7 @@ async def clean_file(
             dedup_time_column=dedup_time_column,
             dedup_subset=dedup_subset,
             remove_nulls=remove_nulls,
-            filter_column=filter_column,
-            filter_values=filter_values,
+            filters=filters,
         )
 
         input_filename = file.filename or "data"

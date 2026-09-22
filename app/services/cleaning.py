@@ -29,8 +29,8 @@ DATETIME_HINTS = [
 # diterapkan, tidak bergantung pada filter_column/filter_values yang user
 # kirim. Cek kedua kemungkinan nama kolom karena normalize_col_names bisa
 # mengubah "State" jadi "state" sebelum langkah ini jalan.
-TARGET_STATE_VALUES = ["Checkout", "Expired"]
-STATE_COLUMN_CANDIDATES = ["State", "state"]
+# TARGET_STATE_VALUES = ["Checkout", "Expired"]
+# STATE_COLUMN_CANDIDATES = ["State", "state"]
 
 
 def normalize_column_name(col: str) -> str:
@@ -140,14 +140,19 @@ def clean_dataframe(
     dedup_time_column: Optional[str] = None,
     dedup_subset: Optional[str] = None,
     remove_nulls: bool = False,
-    filter_column: Optional[str] = None,
-    filter_values: Optional[str] = None,
+    filters: Optional[str] = None,
 ) -> tuple[pd.DataFrame, list[str]]:
     """
     Terapkan langkah-langkah cleaning sesuai flag yang di-passing.
     Kembalikan (df_bersih, steps_log).
+
+    `filters`: JSON string berisi list filter dinamis dari user, mis.
+        '[{"column": "State", "values": ["Checkout", "Expired"]}, {"column": "Program", "values": ["Umum"]}]'
+    Setiap filter diterapkan berurutan (AND) — baris harus lolos SEMUA filter
+    yang diberikan. Filter kosong (values: []) diabaikan.
     """
     steps_log: list[str] = []
+    filter_list: list[dict] = json.loads(filters) if filters else []
 
     # ── 1. Normalisasi nama kolom (PERTAMA, agar referensi kolom lain pakai nama baru) ──
     if normalize_col_names:
@@ -166,8 +171,9 @@ def clean_dataframe(
         if dedup_subset:
             old_subset = json.loads(dedup_subset)
             dedup_subset = json.dumps([rename_map.get(c, c) for c in old_subset])
-        if filter_column and filter_column in rename_map:
-            filter_column = rename_map[filter_column]
+        for f in filter_list:
+            if f.get("column") in rename_map:
+                f["column"] = rename_map[f["column"]]
 
     # ── 2. Hapus duplikat ──
     if remove_duplicates:
@@ -205,27 +211,18 @@ def clean_dataframe(
         removed = before - len(df)
         steps_log.append(f"Hapus baris kosong: {removed} baris dihapus")
 
-    # ── 4. Filter status tetap: Checkout & Expired (selalu jalan, ini tujuan tool) ──
-    state_col = next((c for c in STATE_COLUMN_CANDIDATES if c in df.columns), None)
-    if state_col:
+    # ── 4. Filter kategori dinamis (0, 1, atau banyak — semua dari user) ──
+    for f in filter_list:
+        column = f.get("column")
+        values = f.get("values") or []
+        if not column or not values:
+            continue
+        if column not in df.columns:
+            steps_log.append(f"Filter '{column}' dilewati: kolom tidak ditemukan")
+            continue
         before = len(df)
-        df = df[df[state_col].astype(str).isin(TARGET_STATE_VALUES)]
+        df = df[df[column].astype(str).isin([str(v) for v in values])]
         removed = before - len(df)
-        steps_log.append(
-            f"Filter status tetap ('{state_col}' = {TARGET_STATE_VALUES}): {removed} baris dihapus"
-        )
-    else:
-        steps_log.append(
-            f"Filter status tetap dilewati: kolom status ({'/'.join(STATE_COLUMN_CANDIDATES)}) tidak ditemukan"
-        )
-
-    # ── 5. Filter tambahan berdasarkan kategori (opsional, dari user) ──
-    if filter_column and filter_values:
-        values = json.loads(filter_values)
-        if values:
-            before = len(df)
-            df = df[df[filter_column].astype(str).isin([str(v) for v in values])]
-            removed = before - len(df)
-            steps_log.append(f"Filter '{filter_column}': tersisa {len(df)} baris ({removed} dihapus)")
+        steps_log.append(f"Filter '{column}' = {values}: tersisa {len(df)} baris ({removed} dihapus)")
 
     return df, steps_log
