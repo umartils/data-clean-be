@@ -25,7 +25,7 @@ async def cocokkan_mutasi(
         df_transaksi = read_uploaded_file(
             io.BytesIO(raw_transaksi),
             filename=file_transaksi.filename or "",
-            csv_delimiter=",",
+            csv_delimiter=";",
             csv_header_row=0,
         )
 
@@ -33,7 +33,7 @@ async def cocokkan_mutasi(
         df_mutasi = read_uploaded_file(
             io.BytesIO(raw_mutasi),
             filename=file_mutasi.filename or "",
-            csv_delimiter=",",
+            csv_delimiter=";",
             csv_header_row=0,
         )
 
