@@ -96,6 +96,7 @@ async def clean_file(
             "X-Original-Rows": str(original_rows),
             "X-Final-Rows": str(len(df_clean)),
             "X-Steps-Log": _json.dumps(steps_log),
+            "X-Result-Columns": _json.dumps(list(df_clean.columns)),
         }
         return StreamingResponse(output, media_type=media_type, headers=headers)
     except HTTPException:

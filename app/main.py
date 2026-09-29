@@ -1,15 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import cleaning, sorting
+# from app.routers import cleaning, sorting
+from app.routers import cleaning, matching, sorting
 
-app = FastAPI(title="Lembaga CSV Tools API")
+app = FastAPI(title="MN Tools API")
 
 # Sesuaikan allow_origins ke domain frontend Next.js kamu waktu deploy
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://localhost:3005",
         "https://mn-tools.vercel.app"
         ],
     allow_credentials=True,
@@ -17,11 +19,20 @@ app.add_middleware(
     allow_headers=["*"],
     # X-Original-Rows dkk dipakai frontend data-clean-fe untuk nampilin
     # ringkasan hasil cleaning (jumlah baris sebelum/sesudah, log langkah)
-    expose_headers=["Content-Disposition", "X-Original-Rows", "X-Final-Rows", "X-Steps-Log"],
+    expose_headers=[
+        "Content-Disposition",
+        "X-Original-Rows",
+        "X-Final-Rows",
+        "X-Steps-Log",
+        "X-Result-Columns",
+        "X-Matched-Count",
+        "X-Unmatched-Count",
+    ],
 )
 
 app.include_router(sorting.router)
 app.include_router(cleaning.router)
+app.include_router(matching.router)
 
 
 @app.get("/health")
