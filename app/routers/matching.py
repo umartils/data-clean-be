@@ -19,6 +19,8 @@ async def cocokkan_mutasi(
     nama_column: str = Form(...),
     mutasi_keterangan_column: str = Form("Description"),
     mutasi_jumlah_column: str = Form("Credit"),
+    mutasi_csv_delimiter: str = Form(","),
+    mutasi_csv_header_row: int = Form(0),
 ):
     try:
         raw_transaksi = await file_transaksi.read()
@@ -33,8 +35,8 @@ async def cocokkan_mutasi(
         df_mutasi = read_uploaded_file(
             io.BytesIO(raw_mutasi),
             filename=file_mutasi.filename or "",
-            csv_delimiter=";",
-            csv_header_row=0,
+            csv_delimiter=mutasi_csv_delimiter,
+            csv_header_row=mutasi_csv_header_row,
         )
 
         df_result = match_transaksi_dengan_mutasi(
